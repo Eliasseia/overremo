@@ -7,6 +7,7 @@ const { exec } = require('child_process');
 
 const app = express();
 app.use(bodyParser.json());
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.post('/overlay', async (req, res) => {
   const { backgroundUrl, overlayUrl } = req.body;
@@ -17,11 +18,11 @@ app.post('/overlay', async (req, res) => {
     const overlayVideoPath = await downloadVideo(overlayUrl, 'overlay.mp4');
 
     // Render the overlay video
-    const outputLocation = path.join(__dirname, 'output.mp4');
+    const outputLocation = path.join(__dirname, 'public/output.mp4');
     await renderOverlayVideo(backgroundVideoPath, overlayVideoPath, outputLocation);
 
-    // Return the URL of the resulting video (for simplicity, serve the video from the server)
-    res.json({ outputUrl: `http://your-server.com/output.mp4` });
+    // Return the URL of the resulting video
+    res.json({ outputUrl: `${req.protocol}://${req.get('host')}/public/output.mp4` });
   } catch (error) {
     console.error(error);
     res.status(500).send('Error processing video');
